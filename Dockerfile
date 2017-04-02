@@ -1,3 +1,3 @@
 FROM python:2-onbuild
-CMD [ "python", "./api.py" ]
+CMD [ "python", "api.py" ]
 
