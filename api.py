@@ -51,3 +51,11 @@ def verify_password(username_or_token, passwprd):
 def get_auth_token():
     token = g.user.generate_auth_token()
     return json.dumps({ 'token': token.decode('ascii') })
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
