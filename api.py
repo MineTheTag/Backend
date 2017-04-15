@@ -3,16 +3,20 @@
 from flask import Flask, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 import json
-#imports geoalchemy
+from geoalchemy2 import Geography
+from sqlalchemy import create_engine, event
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 #from generacioBD import taulesBD
 
-app = Flask(__name__)
+app = Flask(__name__) #TODO: És necessari?
 
 ##################################
 ######## GESTIÓ D'USUARIS ########
 ##################################
 
-auth = HTTPBasicAuth()
+auth = HTTPBasicAuth() #TODO: És necessari? declarat a arxiu dani
 
 # User registration
 @app.route('/api/user/registration', methods = ['POST'])
@@ -27,7 +31,7 @@ def new_user():
         abort(400) #existing user
         #return json.dumps({'existing user'})
     user = User(username = username)
-    user.hash_password(password) #TODO: Implementar-ho a script generació BD
+    user.hash_password(password)
     db.session.add(user)
     db.session.commit()
     return json.dumps({'success'})
@@ -59,3 +63,8 @@ def hello_world():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
+
+
+##################################
+######## GESTIÓ DE MINES #########
+##################################

@@ -6,3 +6,5 @@ Axrius de creació de la base de dades i API que utilitzarà l'aplicació Androi
 
 Requeriments:
 - Flask
+- geoalchemy
+- sqlalchemy
