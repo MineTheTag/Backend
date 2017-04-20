@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 from flask import Flask, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 import json
-from sqlalchemy import *
+from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
-#from flask.ext.httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
@@ -15,9 +14,20 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 ######## INICIALITZACIO ##########
 ##################################
 
+
+try:
+	db_user = os.environ['MTTG_DB_USER']
+except:
+	db_user = "mttg"
+try:
+	db_password = os.environ['MTTG_DB_PASSWORD'] or "password"
+except:
+	db_password= "password"
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'clau secreta de prova'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres@db/db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://%s:%s@db/db' %(db_user,db_password)
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db' #Per test
 #app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
 db = SQLAlchemy(app)
@@ -31,10 +41,8 @@ def hello_world():
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
 
-if __name__ == '__main__':
-    if not os.path.exists('db.postgres'):
-        db.create_all()
-    app.run(debug=True)
+#Create the tables
+db.create_all()
 
 #######################################
 ######## DEFINICIÓ DE TAULES ##########
