@@ -1,2 +1,4 @@
 flask
-flask_httpauth
+flask-httpauth
+SQLAlchemy
+passlib
