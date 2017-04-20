@@ -4,20 +4,115 @@
 from flask import Flask, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 import json
-from geoalchemy2 import Geography
-from sqlalchemy import create_engine, event
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-#from generacioBD import taulesBD
+from sqlalchemy import *
+from passlib.apps import custom_app_context as pwd_context
+#from flask.ext.httpauth import HTTPBasicAuth
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 
-app = Flask(__name__) #TODO: És necessari?
+
+##################################
+######## INICIALITZACIO ##########
+##################################
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'clau secreta de prova'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres@db/db'
+#app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+
+db = SQLAlchemy(app)
+auth = HTTPBasicAuth()
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
+
+if __name__ == '__main__':
+    if not os.path.exists('db.postgres'):
+        db.create_all()
+    app.run(debug=True)
+
+#######################################
+######## DEFINICIÓ DE TAULES ##########
+#######################################
+
+class User(db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80),unique=True)
+    password = db.Column(db.String(120))
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
+
+    def generate_auth_token(self, expiration=600):
+        #s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+	s = Serializer(app.config['SECRET_KEY'])
+        return s.dumps({'id': self.id})
+
+    
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None    # valid token, but expired
+        except BadSignature:
+            return None    # invalid token
+        user = User.query.get(data['id'])
+        return user
+
+def add_user(username, password):
+	user = User(name = username)
+    	user.hash_password(password)
+	db.session.add(user)
+	db.session.commit()
+
+@auth.verify_password
+def verify_password(username_or_token, password):
+    # first try to authenticate by token
+    user = User.verify_auth_token(username_or_token)
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username=username_or_token).first()
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
+    return True
+
+class Mine(db.Model):
+     __tablename__ = 'mine'
+     id = db.Column(db.Integer, primary_key=True)
+     posX = db.Column(db.Float)
+     posY = db.Column(db.Float)
+
+def add_mine(x, y):
+	mine = Mine(posX = x, posY = y)
+	db.session.add(mine)
+	db.session.commit()
+
+class Tag(db.Model):
+     __tablename__ = 'tag'
+     id = db.Column(db.Integer, primary_key=True)
+     posX = db.Column(db.Float)
+     posY = db.Column(db.Float)
+
+def add_tag(x, y):
+	tag = Tag(posX = x, posY = y)
+	db.session.add(tag)
+	db.session.commit()
 
 ##################################
 ######## GESTIÓ D'USUARIS ########
 ##################################
-
-auth = HTTPBasicAuth() #TODO: És necessari? declarat a arxiu dani
 
 # User registration
 @app.route('/api/user/registration', methods = ['POST'])
@@ -28,18 +123,16 @@ def new_user():
     if username is None or password is None:
         abort(403) #missing arguments
         #return json.dumps({'missing arguments'})
-    if User.query.filter_by(username=username).first() is not None:
+    if User.query.filter_by(username=username).first() is not None:#TODO: canviar per funció user_exist a
         abort(400) #existing user
         #return json.dumps({'existing user'})
-    user = User(username = username)
-    user.hash_password(password)
-    db.session.add(user)
-    db.session.commit()
+    
+    add_user(username, password)
     return json.dumps({'success'})
 
 # Implementació de verificació de passwords o tokens per accedir a dades d'usuari
 @auth.verify_password
-def verify_password(username_or_token, passwprd):
+def verify_password(username_or_token, password):
     #intentem autenticar amb token
     user = User.verify_auth_token(username_or_token)
     if not user:
@@ -56,14 +149,6 @@ def verify_password(username_or_token, passwprd):
 def get_auth_token():
     token = g.user.generate_auth_token()
     return json.dumps({ 'token': token.decode('ascii') })
-
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
 
 
 ##################################

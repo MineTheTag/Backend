@@ -5,6 +5,7 @@ Arxius de backend del joc Mine The Tag de l'assignatura de Projecte de Tecnologi
 Axrius de creació de la base de dades i API que utilitzarà l'aplicació Android per a comunicar-se amb el servidor. Fets en python, flask i geoalchemy.
 
 Requeriments:
-- Flask
-- geoalchemy
-- sqlalchemy
+- pip install Flask
+- pip install SQLAlchemy
+- pip install Flask-HTTPAuth
+- pip install passlib
