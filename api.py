@@ -26,7 +26,7 @@ except:
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'clau secreta de prova'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://%s:%s@db/db' %(db_user,db_password)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://%s:%s@db/mttg' %(db_user,db_password)
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db' #Per test
 #app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 

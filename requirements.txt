@@ -3,3 +3,4 @@ flask-httpauth
 flask-sqlalchemy
 SQLAlchemy
 passlib
+psycopg2
