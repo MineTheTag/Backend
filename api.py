@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-from flask import Flask, g
+from flask import Flask, g, request, abort
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 import json
 from flask_sqlalchemy import SQLAlchemy
@@ -38,18 +38,12 @@ def hello_world():
     return 'Hello, World!'
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
-
-#Create the tables
-db.create_all()
-
 #######################################
 ######## DEFINICIÓ DE TAULES ##########
 #######################################
 
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80),unique=True)
     password = db.Column(db.String(120))
@@ -65,7 +59,7 @@ class User(db.Model):
 	s = Serializer(app.config['SECRET_KEY'])
         return s.dumps({'id': self.id})
 
-    
+
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(app.config['SECRET_KEY'])
@@ -131,10 +125,10 @@ def new_user():
     if username is None or password is None:
         abort(403) #missing arguments
         #return json.dumps({'missing arguments'})
-    if User.query.filter_by(username=username).first() is not None:#TODO: canviar per funció user_exist a
+    if User.query.filter_by(name=username).first() is not None:#TODO: canviar per funció user_exist a
         abort(400) #existing user
         #return json.dumps({'existing user'})
-    
+
     add_user(username, password)
     return json.dumps({'success'})
 
@@ -162,3 +156,9 @@ def get_auth_token():
 ##################################
 ######## GESTIÓ DE MINES #########
 ##################################
+
+
+if __name__ == '__main__':
+    #Create the tables
+    db.create_all()
+    app.run(host='0.0.0.0')
