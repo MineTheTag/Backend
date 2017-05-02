@@ -1,0 +1,18 @@
+version: '2'
+services:
+  db:
+    image: dpini/mttg_postgres
+    environment:
+      - MTTG_USER=mttg
+      - MTTG_PASSWORD=password
+  web:
+    build: .
+    environment:
+      - MTTG_DB_USER=mttg
+      - MTTG_DB_PASSWORD=password
+    ports:
+    - "5000:5000"
+    depends_on:
+    - db
+    links:
+    - db
