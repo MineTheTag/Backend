@@ -160,6 +160,8 @@ def verify_password(username_or_token, password):
 def get_auth_token():
     token = g.user.generate_auth_token()
     return json.dumps({ 'token': token.decode('ascii') })
+
+# Funció de test. TODO: Eliminar-la al final
 @app.route('/test')
 @auth.login_required
 def user_test():
@@ -188,9 +190,20 @@ def explosio(posX, posY):
     for i in mine:
         explota = compare(posX, posY,i.posX, i.posY)
         if (explota == True):
-            delete_mine(i)
-            explosio = True
+            if (g.user.id != i.user_id):
+                delete_mine(i)
+                explosio = True
     return explosio
+
+@app.route('/api/mine/check/explosion')
+@auth.login_required
+def check_explosion():
+    x = request.json.get('x_pos')
+    y = request.json.get('y_pos')
+    if explosio(x, y):
+        return json.dumps({"result":"Booom"})
+    else:
+        return json.dumps({"result":"Keep calm"})
 
 #Retorna cert si explota o fals si no explota
 def compare(posX, posY, mineX, mineY, radi=5):
@@ -214,6 +227,7 @@ def compare(posX, posY, mineX, mineY, radi=5):
         return False
 
 
+# Main
 if __name__ == '__main__':
     #Create the tables
     db.create_all()
