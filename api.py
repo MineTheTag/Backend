@@ -102,8 +102,8 @@ class Mine(db.Model):
     user = db.relationship('User',
         backref=db.backref('mines', lazy='dynamic'))
 
-def add_mine(x, y):
-	mine = Mine(posX = x, posY = y)
+def add_mine(x, y, user):
+	mine = Mine(posX = x, posY = y, user = user)
 	db.session.add(mine)
 	db.session.commit()
 
@@ -116,8 +116,8 @@ class Tag(db.Model):
      user = db.relationship('User',
          backref=db.backref('tags', lazy='dynamic'))
 
-def add_tag(x, y):
-	tag = Tag(posX = x, posY = y)
+def add_tag(x, y, user):
+	tag = Tag(posX = x, posY = y, user = user)
 	db.session.add(tag)
 	db.session.commit()
 
@@ -169,6 +169,14 @@ def user_test():
 ##################################
 ######## GESTIÓ DE MINES #########
 ##################################
+
+@app.route('/api/mine/new')
+@auth.login_required
+def new_mine():
+    x = request.json.get('x_pos')
+    y = request.json.get('y_pos')
+    add_mine(x,y,g.user)
+    return json.dumps({"result":"OK"})
 
 def delete_mine(mine):
     db.session.delete(mine)
