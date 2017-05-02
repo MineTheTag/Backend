@@ -12,6 +12,9 @@ services:
       - MTTG_DB_PASSWORD=password
     ports:
     - "5000:5000"
+    volumes:
+      - .:/usr/src/app
+    restart: on-failure
     depends_on:
     - db
     links:
