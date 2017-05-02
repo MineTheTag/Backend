@@ -94,10 +94,13 @@ def verify_password(username_or_token, password):
     return True
 
 class Mine(db.Model):
-     __tablename__ = 'mine'
-     id = db.Column(db.Integer, primary_key=True)
-     posX = db.Column(db.Float)
-     posY = db.Column(db.Float)
+    __tablename__ = 'mine'
+    id = db.Column(db.Integer, primary_key=True)
+    posX = db.Column(db.Float)
+    posY = db.Column(db.Float)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User',
+        backref=db.backref('mines', lazy='dynamic'))
 
 def add_mine(x, y):
 	mine = Mine(posX = x, posY = y)
@@ -109,6 +112,9 @@ class Tag(db.Model):
      id = db.Column(db.Integer, primary_key=True)
      posX = db.Column(db.Float)
      posY = db.Column(db.Float)
+     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+     user = db.relationship('User',
+         backref=db.backref('tags', lazy='dynamic'))
 
 def add_tag(x, y):
 	tag = Tag(posX = x, posY = y)
