@@ -49,10 +49,11 @@ class User(db.Model):
     password = db.Column(db.String(120))
 
     def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
+        self.password = pwd_context.encrypt(password)
+        print(self.password)
 
     def verify_password(self, password):
-        return pwd_context.verify(password, self.password_hash)
+        return pwd_context.verify(password, self.password)
 
     def generate_auth_token(self, expiration=600):
         #s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
@@ -73,10 +74,10 @@ class User(db.Model):
         return user
 
 def add_user(username, password):
-	user = User(name = username)
-    	user.hash_password(password)
-	db.session.add(user)
-	db.session.commit()
+    user = User(name = username)
+    user.hash_password(password)
+    db.session.add(user)
+    db.session.commit()
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -84,7 +85,7 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
         # try to authenticate with username/password
-        user = User.query.filter_by(username=username_or_token).first()
+        user = User.query.filter_by(name=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
@@ -123,14 +124,14 @@ def new_user():
     password = request.json.get('password')
 
     if username is None or password is None:
-        abort(403) #missing arguments
-        #return json.dumps({'missing arguments'})
+        #abort(403) #missing arguments
+        return json.dumps({"result": "missing arguments"})
     if User.query.filter_by(name=username).first() is not None:#TODO: canviar per funció user_exist a
-        abort(400) #existing user
-        #return json.dumps({'existing user'})
+        #abort(400) #existing user
+        return json.dumps({"result": "existing user"})
 
     add_user(username, password)
-    return json.dumps({'success'})
+    return json.dumps({"result": "success"})
 
 # Implementació de verificació de passwords o tokens per accedir a dades d'usuari
 @auth.verify_password
@@ -139,7 +140,7 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
         # intentem autenticar amb username/password
-        user = User.query.filter_by(username = username_or_token).first()
+        user = User.query.filter_by(name = username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
@@ -151,6 +152,10 @@ def verify_password(username_or_token, password):
 def get_auth_token():
     token = g.user.generate_auth_token()
     return json.dumps({ 'token': token.decode('ascii') })
+@app.route('/test')
+@auth.login_required
+def user_test():
+    return json.dumps("Hello user %s" % g.user.name )
 
 
 ##################################
@@ -161,4 +166,4 @@ def get_auth_token():
 if __name__ == '__main__':
     #Create the tables
     db.create_all()
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0',debug=True)
