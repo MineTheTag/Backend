@@ -9,6 +9,8 @@ from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
+from math import sin, cos, sqrt, atan2, radians
+
 
 ##################################
 ######## INICIALITZACIO ##########
@@ -57,7 +59,7 @@ class User(db.Model):
 
     def generate_auth_token(self, expiration=600):
         #s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-	s = Serializer(app.config['SECRET_KEY'])
+        s = Serializer(app.config['SECRET_KEY'])
         return s.dumps({'id': self.id})
 
 
@@ -161,6 +163,41 @@ def user_test():
 ##################################
 ######## GESTIÓ DE MINES #########
 ##################################
+
+def delete_mine(mine):
+    db.session.delete(mine)
+    db.session.commit()
+
+def explosio(posX, posY):
+    mine = Mine.query.all()
+    explosio = False
+    for i in mine:
+        explota = compare(posX, posY,i.posX, i.posY)
+        if (explota == True):
+            delete_mine(i)
+            explosio = True
+    return explosio
+
+#Retorna cert si explota o fals si no explota
+def compare(posX, posY, mineX, mineY, radi=5):
+# approximate radius of earth in m
+    R = 6373000.0
+    lat1 = radians(posX)
+    lon1 = radians(posY)
+    lat2 = radians(mineX)
+    lon2 = radians(mineY)
+    lon = lon2 - lon1
+    lat = lat2 - lat1
+    a = sin(lat / 2)**2 + cos(lat1) * cos(lat2) * sin(lon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    distance = R * c
+    print("La distancia es: %02d metres") % (distance)
+    if (distance <= radi):
+        print("BOOOOM")
+        return True
+    else:
+        print("T'has salvat pillin")
+        return False
 
 
 if __name__ == '__main__':
