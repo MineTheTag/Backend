@@ -172,7 +172,7 @@ def user_test():
 ######## GESTIÓ DE MINES #########
 ##################################
 
-@app.route('/api/mine/new')
+@app.route('/api/mines/new', methods = ['POST'])
 @auth.login_required
 def new_mine():
     x = request.json.get('x_pos')
@@ -195,7 +195,7 @@ def explosio(posX, posY):
                 explosio = True
     return explosio
 
-@app.route('/api/mine/check/explosion')
+@app.route('/api/mines/check/explosion', methods = ['POST'])
 @auth.login_required
 def check_explosion():
     x = request.json.get('x_pos')
@@ -220,11 +220,17 @@ def compare(posX, posY, mineX, mineY, radi=5):
     distance = R * c
     print("La distancia es: %02d metres") % (distance)
     if (distance <= radi):
-        print("BOOOOM")
         return True
     else:
-        print("T'has salvat pillin")
         return False
+
+# Retorna totes les mines d'un usuari
+@app.route('/api/mines/get', methods = ['POST'])
+@auth.login_required
+def get_mines():
+    mines = Mine.query.filter_by(user_id=g.user.id).all()
+    mines_ret =  [(mine.posX,mine.posY) for mine in mines]
+    return json.dumps(mines_ret)
 
 
 # Main
