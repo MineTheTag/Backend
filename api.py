@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-
+from datetime import *
 from math import sin, cos, sqrt, atan2, radians
 
 
@@ -49,6 +49,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80),unique=True)
     password = db.Column(db.String(120))
+    blocked = db.Column(db.DateTime, default=datetime.now())
 
     def hash_password(self, password):
         self.password = pwd_context.encrypt(password)
@@ -74,6 +75,16 @@ class User(db.Model):
             return None    # invalid token
         user = User.query.get(data['id'])
         return user
+
+    def is_user_blocked(self):
+        if self.blocked > datetime.now():
+            return True
+        else:
+            return False
+
+    def block_user(self, minuts=1):
+        self.blocked = datetime.now() + timedelta(minutes=minuts)
+        db.session.commit()
 
 def add_user(username, password):
     user = User(name = username)
@@ -200,8 +211,10 @@ def explosio(posX, posY):
 def check_explosion():
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    if explosio(x, y):
-        return json.dumps({"result":"Booom"})
+    if (not g.user.is_user_blocked()):
+        if explosio(x, y):
+            g.user.block_user()
+            return json.dumps({"result":"Booom"})
     else:
         return json.dumps({"result":"Keep calm"})
 
