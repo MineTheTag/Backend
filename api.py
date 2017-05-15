@@ -252,7 +252,7 @@ def get_mines():
 @app.route('/api/admin/mines/getdiff', methods = ['POST'])
 @auth.login_required
 def admin_get_other_mines():
-    mines = Mine.query.filter(user_id != g.user.id).all()
+    mines = Mine.query.filter(Mine.user_id != g.user.id).all()
     mines_ret =  [(mine.posX,mine.posY) for mine in mines]
     return json.dumps(mines_ret)
 
