@@ -248,7 +248,7 @@ def get_mines():
     mines_ret =  [(mine.posX,mine.posY) for mine in mines]
     return json.dumps(mines_ret)
 
-# Retorna totes les mines d'un usuari
+# Retorna totes les mines dels altres usuaris
 @app.route('/api/admin/mines/getdiff', methods = ['POST'])
 @auth.login_required
 def admin_get_other_mines():
