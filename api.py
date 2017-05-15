@@ -266,7 +266,7 @@ def admin_get_other_mines():
 def new_tag():
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    add_mine(x, y, g.user)
+    add_tag(x, y, g.user)
     return json.dumps({"result": "OK"})
 
 # Retorna tots els tags
@@ -275,8 +275,8 @@ def new_tag():
 def get_tags():
     tags = Tag.query.all()
     tags_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY, 'user': tag.user_id}
-                for mine in mines]
-    return json.dumps(mines_ret)
+                for tag in tags]
+    return json.dumps(tags_ret)
 
 
 # Main
