@@ -211,10 +211,9 @@ def explosio(posX, posY):
 def check_explosion():
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    if (not g.user.is_user_blocked()):
-        if explosio(x, y):
-            g.user.block_user()
-            return json.dumps({"result":"Booom"})
+    if (not g.user.is_user_blocked()) and explosio(x, y):
+        g.user.block_user()
+        return json.dumps({"result":"Booom"})
     else:
         return json.dumps({"result":"Keep calm"})
 
