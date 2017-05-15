@@ -233,6 +233,28 @@ def get_mines():
     return json.dumps(mines_ret)
 
 
+##################################
+#######  GESTIÓ DE TAGS  #########
+##################################
+
+@app.route('/api/tags/new', methods=['POST'])
+@auth.login_required
+def new_tag():
+    x = request.json.get('x_pos')
+    y = request.json.get('y_pos')
+    add_mine(x, y, g.user)
+    return json.dumps({"result": "OK"})
+
+# Retorna tots els tags
+@app.route('/api/tags/get', methods=['POST'])
+@auth.login_required
+def get_tags():
+    tags = Tag.query.all()
+    tags_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY, 'user': tag.user_id}
+                for mine in mines]
+    return json.dumps(mines_ret)
+
+
 # Main
 if __name__ == '__main__':
     #Create the tables
