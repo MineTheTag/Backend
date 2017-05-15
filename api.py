@@ -197,28 +197,32 @@ def delete_mine(mine):
 
 def explosio(posX, posY):
     mine = Mine.query.all()
-    explosio = False
+    exploded_mines = []
     for i in mine:
         explota = compare(posX, posY,i.posX, i.posY)
         if (explota == True):
             if (g.user.id != i.user_id):
+                exploded_mines.append((i.posX,i.posY))
                 delete_mine(i)
-                explosio = True
-    return explosio
+    return exploded_mines
 
 @app.route('/api/mines/check/explosion', methods = ['POST'])
 @auth.login_required
 def check_explosion():
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    if (not g.user.is_user_blocked()) and explosio(x, y):
-        g.user.block_user()
-        return json.dumps({"result":"Booom"})
+    if not g.user.is_user_blocked():
+        exploded_mines = explosio(x, y)
+        if exploded_mines:
+            g.user.block_user()
+            return json.dumps({"result":"Booom", "exploded_mines" : exploded_mines})
+        else:
+            return json.dumps({"result":"Keep calm"})
     else:
         return json.dumps({"result":"Keep calm"})
 
 #Retorna cert si explota o fals si no explota
-def compare(posX, posY, mineX, mineY, radi=5):
+def compare(posX, posY, mineX, mineY, radi=15):
 # approximate radius of earth in m
     R = 6373000.0
     lat1 = radians(posX)
