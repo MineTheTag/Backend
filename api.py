@@ -202,7 +202,7 @@ def can_user_put_mine(x, y):
         in_radius = compare(x, y, mine.posX, mine.posY, 50)
 	if in_radius:
             nmines+=1
-            if (nmines>5):
+            if (nmines >= 5):
                 return False
     return True
 
@@ -304,7 +304,7 @@ def change_tag_user(tag_id):
         db.commit()
         return True
     return False
-    
+
 
 # Retorna tots els tags
 @app.route('/api/tags/get', methods=['POST'])
