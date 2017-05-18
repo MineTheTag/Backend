@@ -121,14 +121,15 @@ def add_mine(x, y, user):
 class Tag(db.Model):
      __tablename__ = 'tag'
      id = db.Column(db.Integer, primary_key=True)
+     tag_id = db.Column(db.BigInteger, unique=True)
      posX = db.Column(db.Float)
      posY = db.Column(db.Float)
      user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
      user = db.relationship('User',
          backref=db.backref('tags', lazy='dynamic'))
 
-def add_tag(x, y, user):
-	tag = Tag(posX = x, posY = y, user = user)
+def add_tag(tag_id, x, y, user):
+	tag = Tag(tag_id = tag_id, posX = x, posY = y, user = user)
 	db.session.add(tag)
 	db.session.commit()
 
@@ -277,9 +278,10 @@ def admin_get_other_mines():
 @app.route('/api/tags/new', methods=['POST'])
 @auth.login_required
 def new_tag():
+    tag_id = request.json.get('tag_id')
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    add_tag(x, y, g.user)
+    add_tag(tag_id, x, y, g.user)
     return json.dumps({"result": "OK"})
 
 # Retorna tots els tags
