@@ -313,13 +313,15 @@ def change_tag_user(tag_id):
 @app.route('/api/tags/get', methods=['POST'])
 @auth.login_required
 def get_tags():
-    tags_propis = Tag.query.filter_by(user_id = g.user.id).all()
-    tags_aliens = Tag.query.filter_by(user_id != g.user.id).all()
+    tags_propis = Tag.query.filter_by(user_id=g.user.id).all()
+    tags_aliens = Tag.query.filter(Tag.user_id != g.user.id).all()
 
-    tags_propis_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY}
+    tags_propis_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY,
+                        'user_id': tag.user_id, 'username': tag.user.name}
                 for tag in tags_propis]
 
-    tags_aliens_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY}
+    tags_aliens_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY,
+                        'user_id': tag.user_id, 'username': tag.user.name}
                 for tag in tags_aliens]
 
     return json.dumps({"tags propis" : tags_propis_ret, "tags aliens" : tags_aliens_ret})
