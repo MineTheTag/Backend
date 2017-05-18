@@ -281,7 +281,10 @@ def new_tag():
     tag_id = request.json.get('tag_id')
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    add_tag(tag_id, x, y, g.user)
+    try:
+        add_tag(tag_id, x, y, g.user)
+    except:
+        return json.dumps({"result": "TAG already exists"})
     return json.dumps({"result": "OK"})
 
 @app.route('/api/tags/capture', methods=['POST'])
@@ -310,8 +313,8 @@ def change_tag_user(tag_id):
 @app.route('/api/tags/get', methods=['POST'])
 @auth.login_required
 def get_tags():
-    tags_propis = Tag.query.filter_by(Tag.user_id=g.user.id).all()
-    tags_aliens = Tag.query.filter_by(Tag.user_id!=g.user.id).all()
+    tags_propis = Tag.query.filter_by(user_id = g.user.id).all()
+    tags_aliens = Tag.query.filter_by(user_id != g.user.id).all()
 
     tags_propis_ret = [{'x_pos': tag.posX, 'y_pos': tag.posY}
                 for tag in tags_propis]
