@@ -200,7 +200,7 @@ def can_user_put_mine(x, y):
     for mine in mines:
         in_radius = compare(x, y, mine.posX, mine.posY, 50)
 	if in_radius:
-            nmines++
+            nmines+=1
             if (nmines>5):
                 return False
     return True
