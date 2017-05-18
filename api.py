@@ -188,8 +188,22 @@ def user_test():
 def new_mine():
     x = request.json.get('x_pos')
     y = request.json.get('y_pos')
-    add_mine(x,y,g.user)
-    return json.dumps({"result":"OK"})
+    if can_user_put_mine(x, y):
+        add_mine(x,y,g.user)
+        return json.dumps({"result":"OK"})
+    else:
+        return json.dumps({"result":"Reached maximum mines in the perimeter"})
+
+def can_user_put_mine(x, y):
+    nmines = 0
+    mines = Mine.query.filter_by(user_id=g.user.id).all()
+    for mine in mines:
+        in_radius = compare(x, y, mine.posX, mine.posY, 50)
+	if in_radius:
+            nmines++
+            if (nmines>5):
+                return False
+    return True
 
 def delete_mine(mine):
     db.session.delete(mine)
@@ -234,7 +248,6 @@ def compare(posX, posY, mineX, mineY, radi=15):
     a = sin(lat / 2)**2 + cos(lat1) * cos(lat2) * sin(lon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     distance = R * c
-    print("La distancia es: %02d metres") % (distance)
     if (distance <= radi):
         return True
     else:
