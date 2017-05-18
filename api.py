@@ -121,7 +121,7 @@ def add_mine(x, y, user):
 class Tag(db.Model):
      __tablename__ = 'tag'
      id = db.Column(db.Integer, primary_key=True)
-     tag_id = db.Column(db.BigInteger, unique=True)
+     tag_id = db.Column(db.BigInteger, unique=True, nullable=False)
      posX = db.Column(db.Float)
      posY = db.Column(db.Float)
      user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -283,6 +283,28 @@ def new_tag():
     y = request.json.get('y_pos')
     add_tag(tag_id, x, y, g.user)
     return json.dumps({"result": "OK"})
+
+@app.route('/api/tags/capture', methods=['POST'])
+@auth.login_required
+def capturar_tag():
+    if not g.user.is_user_blocked():
+        tag_id = request.json.get('tag_id')
+	res = change_tag_user(tag_id)
+        if res:
+            return json.dumps({"result": "OK"})
+        else:
+            return json.dumps({"result": "Tag doesn't exist"})
+    else:
+        return json.dumps({"result": "User blocked"})
+
+def change_tag_user(tag_id):
+    t = Tag.query.filter(Tag.tag_id == tag_id).first()
+    if t is not None:
+        t.user_id = g.user.id
+        db.commit()
+        return True
+    return False
+    
 
 # Retorna tots els tags
 @app.route('/api/tags/get', methods=['POST'])
