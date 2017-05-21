@@ -304,7 +304,7 @@ def change_tag_user(tag_id):
     t = Tag.query.filter(Tag.tag_id == tag_id).first()
     if t is not None:
         t.user_id = g.user.id
-        db.commit()
+        db.session.commit()
         return True
     return False
 
